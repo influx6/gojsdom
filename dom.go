@@ -87,8 +87,7 @@
 // TokenList will provide methods to convert it to strings and slices.
 
 //TODO: removing this temporary until owner merges branch
-// package dom // import "honnef.co/go/js/dom"
-package dom
+package dom // import "honnef.co/go/js/dom"
 
 import (
 	"strings"
