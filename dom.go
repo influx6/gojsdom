@@ -86,7 +86,6 @@
 // which will be able to accomplish the same. Additionally, our
 // TokenList will provide methods to convert it to strings and slices.
 
-//TODO: removing this temporary until owner merges branch
 // package dom // import "honnef.co/go/js/dom"
 package dom
 
@@ -171,7 +170,7 @@ func wrapDocument(o *js.Object) Document {
 
 func wrapDocumentFragment(o *js.Object) DocumentFragment {
 	switch o.Get("constructor") {
-	//TODO: do we have any other stuff we want to check
+	// TODO: do we have any other stuff we want to check
 	default:
 		return &documentFragment{&BasicNode{o}}
 	}
@@ -490,8 +489,8 @@ type Document interface {
 }
 
 type DocumentFragment interface {
-	ParentNode
 	Node
+	ParentNode
 	QuerySelector(sel string) Element
 	QuerySelectorAll(sel string) []Element
 	GetElementByID(id string) Element
@@ -524,10 +523,6 @@ type HTMLDocument interface {
 	URL() string
 
 	// TODO HTMLDocument methods
-}
-
-type htmlFragmentDocument struct {
-	*documentFragment
 }
 
 type documentFragment struct {
