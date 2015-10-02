@@ -492,8 +492,9 @@ type Document interface {
 type DocumentFragment interface {
 	ParentNode
 	Node
-	QuerySelector(string) Element
-	QuerySelectorAll(string) []Element
+	QuerySelector(sel string) Element
+	QuerySelectorAll(sel string) []Element
+	GetElementByID(id string) Element
 }
 
 type HTMLDocument interface {
