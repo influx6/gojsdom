@@ -137,6 +137,41 @@ func nodeListToHTMLElements(o *js.Object) []HTMLElement {
 	return out
 }
 
+func dataListToAttributes(o *js.Object) []Attribute {
+	var out []Attribute
+	length := o.Get("length").Int()
+
+	for i := 0; i < length; i++ {
+		item := o.Call("item", i)
+		if item != nil {
+			name := item.Get("name").String()
+			if strings.HasPrefix(name, "data-") {
+				out = append(out, &attribute{
+					key:   strings.TrimPrefix(name, "data-"),
+					value: item.Get("value").String(),
+				})
+			}
+		}
+	}
+	return out
+}
+
+func attributeListToAttributes(o *js.Object) []Attribute {
+	var out []Attribute
+	length := o.Get("length").Int()
+
+	for i := 0; i < length; i++ {
+		item := o.Call("item", i)
+		if item != nil {
+			out = append(out, &attribute{
+				key:   item.Get("name").String(),
+				value: item.Get("value").String(),
+			})
+		}
+	}
+	return out
+}
+
 func WrapDocument(o *js.Object) Document {
 	return wrapDocument(o)
 }
@@ -452,6 +487,24 @@ func (tl *TokenList) SetString(s string) {
 // Individual tokens in s shouldn't countain spaces.
 func (tl *TokenList) Set(s []string) {
 	tl.SetString(strings.Join(s, " "))
+}
+
+type attribute struct {
+	key   string
+	value string
+}
+
+func (a attribute) Value() string {
+	return a.value
+}
+
+func (a attribute) Key() string {
+	return a.key
+}
+
+type Attribute interface {
+	Key() string
+	Value() string
 }
 
 type Document interface {
@@ -816,7 +869,6 @@ type HTMLElement interface {
 	ContentEditable() string
 	SetContentEditable(string)
 	IsContentEditable() bool
-	Dataset() // FIXME type
 	Dir() string
 	SetDir(string)
 	Draggable() bool
@@ -1449,7 +1501,9 @@ type Element interface {
 	ParentNode
 	ChildNode
 
+	Attributes() []Attribute
 	Class() *TokenList
+	Dataset() []Attribute
 	ID() string
 	SetID(string)
 	TagName() string
@@ -1523,11 +1577,6 @@ func (e *BasicHTMLElement) SetContentEditable(s string) {
 
 func (e *BasicHTMLElement) IsContentEditable() bool {
 	return e.Get("isContentEditable").Bool()
-}
-
-func (e *BasicHTMLElement) Dataset() {
-	// FIXME type
-	// FIXME implement
 }
 
 func (e *BasicHTMLElement) Dir() string {
@@ -1610,6 +1659,14 @@ func (e *BasicHTMLElement) Focus() {
 // by concrete element types and HTML element types.
 type BasicElement struct {
 	*BasicNode
+}
+
+func (e *BasicElement) Attributes() []Attribute {
+	return attributeListToAttributes(e.Get("attributes"))
+}
+
+func (e *BasicElement) Dataset() []Attribute {
+	return dataListToAttributes(e.Get("attributes"))
 }
 
 func (e *BasicElement) GetBoundingClientRect() ClientRect {
