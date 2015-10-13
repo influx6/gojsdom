@@ -149,6 +149,15 @@ func attrSetToMap(o *js.Object) map[string]string {
 	return attrs
 }
 
+func dataSetToMap(o *js.Object) map[string]string {
+	data := map[string]string{}
+	keys := js.Keys(o)
+	for _, key := range keys {
+		data[key] = o.Get(key).String()
+	}
+	return data
+}
+
 func WrapDocument(o *js.Object) Document {
 	return wrapDocument(o)
 }
@@ -1625,7 +1634,7 @@ func (e *BasicElement) Attributes() map[string]string {
 }
 
 func (e *BasicElement) Dataset() map[string]string {
-	return attrSetToMap(e.Get("dataset"))
+	return dataSetToMap(e.Get("dataset"))
 }
 
 func (e *BasicElement) GetBoundingClientRect() ClientRect {
