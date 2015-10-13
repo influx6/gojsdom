@@ -85,7 +85,7 @@
 // TokenList will provide Set([]string) and SetString(string) methods,
 // which will be able to accomplish the same. Additionally, our
 // TokenList will provide methods to convert it to strings and slices.
-package dom
+package dom // import "honnef.co/go/js/dom"
 
 import (
 	"strings"
@@ -137,39 +137,16 @@ func nodeListToHTMLElements(o *js.Object) []HTMLElement {
 	return out
 }
 
-func dataListToAttributes(o *js.Object) []Attribute {
-	var out []Attribute
+func attrSetToMap(o *js.Object) map[string]string {
+	attrs := map[string]string{}
 	length := o.Get("length").Int()
 
 	for i := 0; i < length; i++ {
 		item := o.Call("item", i)
-		if item != nil {
-			name := item.Get("name").String()
-			if strings.HasPrefix(name, "data-") {
-				out = append(out, &attribute{
-					key:   strings.TrimPrefix(name, "data-"),
-					value: item.Get("value").String(),
-				})
-			}
-		}
+		attrs[item.Get("name").String()] = item.Get("value").String()
 	}
-	return out
-}
 
-func attributeListToAttributes(o *js.Object) []Attribute {
-	var out []Attribute
-	length := o.Get("length").Int()
-
-	for i := 0; i < length; i++ {
-		item := o.Call("item", i)
-		if item != nil {
-			out = append(out, &attribute{
-				key:   item.Get("name").String(),
-				value: item.Get("value").String(),
-			})
-		}
-	}
-	return out
+	return attrs
 }
 
 func WrapDocument(o *js.Object) Document {
@@ -487,24 +464,6 @@ func (tl *TokenList) SetString(s string) {
 // Individual tokens in s shouldn't countain spaces.
 func (tl *TokenList) Set(s []string) {
 	tl.SetString(strings.Join(s, " "))
-}
-
-type attribute struct {
-	key   string
-	value string
-}
-
-func (a attribute) Value() string {
-	return a.value
-}
-
-func (a attribute) Key() string {
-	return a.key
-}
-
-type Attribute interface {
-	Key() string
-	Value() string
 }
 
 type Document interface {
@@ -1501,9 +1460,9 @@ type Element interface {
 	ParentNode
 	ChildNode
 
-	Attributes() []Attribute
+	Attributes() map[string]string
 	Class() *TokenList
-	Dataset() []Attribute
+	Dataset() map[string]string
 	ID() string
 	SetID(string)
 	TagName() string
@@ -1661,12 +1620,12 @@ type BasicElement struct {
 	*BasicNode
 }
 
-func (e *BasicElement) Attributes() []Attribute {
-	return attributeListToAttributes(e.Get("attributes"))
+func (e *BasicElement) Attributes() map[string]string {
+	return attrSetToMap(e.Get("attributes"))
 }
 
-func (e *BasicElement) Dataset() []Attribute {
-	return dataListToAttributes(e.Get("attributes"))
+func (e *BasicElement) Dataset() map[string]string {
+	return attrSetToMap(e.Get("dataset"))
 }
 
 func (e *BasicElement) GetBoundingClientRect() ClientRect {
